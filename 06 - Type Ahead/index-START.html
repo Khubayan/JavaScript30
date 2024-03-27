@@ -1,23 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Type Ahead 👀</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="icon" href="https://fav.farm/🔥" />
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Type Ahead 👀</title>
+    <link rel="stylesheet" href="./style.css" />
+    <link rel="icon" href="https://fav.farm/🔥" />
+  </head>
+  <body>
+    <form class="search-form">
+      <input type="text" class="search" placeholder="Name or City" />
 
-  <form class="search-form">
-    <input type="text" class="search" placeholder="City or State">
-    <ul class="suggestions">
-      <li>Filter for a city</li>
-      <li>or a state</li>
-    </ul>
-  </form>
-<script>
-const endpoint = 'https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json';
+      <ul class="suggestions">
+        <li>Filter for a patient</li>
+        <li>or a city</li>
+      </ul>
+    </form>
+    <script>
+      const paArr = [];
+      const getData = async () => {
+        try {
+          const result = await fetch(
+            "https://furieepiiai.vercel.app/api/v1/patients"
+          );
+          // console.log(result);
+          const data = await result.json();
+          // console.log(data.data.patients);
+          paArr.push(...data.data.patients);
+        } catch (e) {
+          console.log("error katanya, ", e);
+        }
+      };
 
-</script>
-</body>
+      getData(); //populated the array
+
+      const displayMatches = function () {
+        const matchArr = findMatches(this.value, paArr);
+        const html = matchArr
+          .map((patient) => {
+            const regex = new RegExp(this.value, "gi");
+            const patientName = patient.name.replace(
+              regex,
+              `<span class="hl">${this.value}</span>`
+            );
+            const patientCity = patient.city.replace(
+              regex,
+              `<span class="hl">${this.value}</span>`
+            );
+            console.log(patientName);
+            return `
+          <li>
+            <span class="name"> ${patientName}, ${patient.email} </span>
+            <span class="population"> ${patientCity}</span>
+          </li>
+          `;
+          })
+          .join("");
+        suggestion.innerHTML = html;
+      };
+
+      const findMatches = function (wordToMatches, patients) {
+        return patients.filter((patient) => {
+          const regex = new RegExp(wordToMatches, "gi");
+          return patient.name.match(regex) || patient.city.match(regex);
+        });
+      };
+
+      const searchInput = document.querySelector(".search");
+      const suggestion = document.querySelector(".suggestions");
+
+      searchInput.addEventListener("input", displayMatches);
+    </script>
+  </body>
 </html>
